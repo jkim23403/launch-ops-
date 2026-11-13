@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Cape Canaveral upcoming launch planning-awareness dashboard.">
+  <title>Cape Canaveral Upcoming Launches</title>
+  <style>
+    :root { --bg:#061728; --header:#071d32; --panel:#0d2b45; --panel2:#123a58; --line:#2a5c7c; --text:#f3f8fc; --muted:#a9c1d1; --blue:#41c3ed; --green:#42d17d; --yellow:#f6c447; --red:#ee6262; --gold:#f5c84c; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-width:320px; color:var(--text); background:radial-gradient(circle at 90% 0%,#174e72 0,transparent 34rem),var(--bg); font-family:Arial,Helvetica,sans-serif; }
+    header { padding:26px 20px; border-bottom:1px solid var(--line); background:rgba(4,18,31,.95); }
+    .header-content,main { width:min(1280px,calc(100% - 32px)); margin:0 auto; }
+    .header-content { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:16px; }
+    h1,h2,p { margin-top:0; } h1 { margin-bottom:7px; font-size:clamp(1.45rem,4vw,2.25rem); } h2 { margin-bottom:14px; font-size:1.15rem; }
+    .subtitle,.muted,footer,#status { color:var(--muted); }.subtitle { margin-bottom:0; }
+    .zulu-clock { min-width:220px; padding:11px 14px; border:1px solid var(--line); border-radius:8px; background:rgba(13,43,69,.92); text-align:right; }
+    .zulu-label { display:block; color:var(--muted); font-size:.72rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }
+    #zuluClock { display:block; margin-top:4px; color:var(--blue); font-family:"Courier New",monospace; font-size:1.12rem; font-weight:800; }
+    main { padding:22px 0 45px; }.controls,.card { border:1px solid var(--line); border-radius:12px; background:rgba(13,43,69,.95); box-shadow:0 12px 28px rgba(0,0,0,.18); }
+    .controls { display:flex; flex-wrap:wrap; align-items:end; gap:12px; padding:16px; margin-bottom:16px; }.field { display:grid; gap:6px; }
+    label { color:var(--muted); font-size:.82rem; font-weight:700; } select,button { min-height:43px; padding:0 13px; border-radius:7px; font:inherit; } select { min-width:220px; color:var(--text); border:1px solid var(--line); background:#081d30; } button { border:0; cursor:pointer; color:#052033; background:var(--blue); font-weight:800; } button:hover { filter:brightness(1.07); }
+    .grid { display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:16px; }.card { padding:18px; }.next-card { grid-column:span 7; }.summary-card { grid-column:span 5; }.table-card,.source-card { grid-column:span 12; }
+    .next-layout { display:grid; grid-template-columns:1fr auto; gap:18px; align-items:center; }.eyebrow { color:var(--muted); font-size:.75rem; font-weight:700; letter-spacing:.06em; text-transform:uppercase; }.mission { margin:7px 0 5px; font-size:clamp(1.35rem,3vw,1.8rem); }.vehicle { color:var(--blue); font-weight:700; }.countdown { min-width:205px; padding:15px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); text-align:center; }.countdown strong { display:block; margin-top:6px; color:var(--gold); font-family:"Courier New",monospace; font-size:1.22rem; }
+    .metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }.metric { min-height:92px; padding:13px; border-radius:8px; background:rgba(255,255,255,.055); }.metric-label { display:block; color:var(--muted); font-size:.75rem; font-weight:700; }.metric-value { display:block; margin-top:8px; font-size:1.1rem; font-weight:800; line-height:1.28; }.metric-note { display:block; margin-top:6px; color:var(--muted); font-size:.71rem; line-height:1.25; }
+    .status-panel { padding:14px; margin-bottom:14px; border:1px solid var(--line); border-radius:8px; background:var(--panel2); }.status-panel strong { display:block; margin-top:4px; font-size:1.25rem; }.badge { display:inline-block; padding:6px 11px; border-radius:999px; color:#061728; font-size:.76rem; font-weight:900; }.green { background:var(--green); }.yellow { background:var(--yellow); }.red { color:#fff; background:var(--red); }.gray { color:#061728; background:#a9c1d1; }
+    .notice { padding:12px 14px; margin:0 0 16px; color:#fff4cf; border:1px solid #9b7622; border-radius:8px; background:rgba(101,73,13,.32); line-height:1.4; }.hidden { display:none!important; }
+    .table-wrap { overflow-x:auto; } table { width:100%; min-width:1000px; border-collapse:collapse; } th,td { padding:11px 10px; text-align:left; border-bottom:1px solid rgba(169,193,209,.18); vertical-align:top; } th { color:var(--muted); font-size:.73rem; letter-spacing:.04em; text-transform:uppercase; } tbody tr:hover { background:rgba(255,255,255,.04); }.source-card p { margin-bottom:8px; color:var(--muted); line-height:1.45; } code { color:#d8f5ff; } footer { padding-top:20px; font-size:.81rem; line-height:1.45; }
+    @media(max-width:900px) { .next-card,.summary-card { grid-column:span 12; } } @media(max-width:650px) { .header-content,main { width:min(100% - 24px,1280px); }.zulu-clock { width:100%; text-align:left; }.next-layout,.metrics { grid-template-columns:1fr; } select,button { width:100%; } }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <div>
+        <h1>Cape Canaveral Upcoming Launches</h1>
+        <p class="subtitle">Public schedule awareness for Cape Canaveral Space Force Station and Kennedy Space Center.</p>
+      </div>
+      <div class="zulu-clock" aria-live="polite">
+        <span class="zulu-label">Current Zulu Time</span>
+        <strong id="zuluClock">--</strong>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls" aria-label="Launch filters">
+      <div class="field"><label for="providerFilter">Launch Provider</label><select id="providerFilter"><option value="all">All Providers</option></select></div>
+      <div class="field"><label for="siteFilter">Launch Site</label><select id="siteFilter"><option value="all">All Cape Area Sites</option></select></div>
+      <div class="field"><label for="statusFilter">Schedule Status</label><select id="statusFilter"><option value="all">All Statuses</option><option value="GO">GO</option><option value="TBD">TBD</option><option value="DELAYED">DELAYED</option><option value="HOLD">HOLD</option></select></div>
+      <button id="refreshButton" type="button">Refresh View</button>
+    </section>
+
+    <p id="status">Loading schedule data...</p>
+    <p class="notice">Planning-awareness display only. Public launch schedules and times can change quickly. Confirm the official provider, launch-range, and mission sources before relying on any entry.</p>
+
+    <section class="grid">
+      <article class="card next-card">
+        <span class="eyebrow">Next Filtered Launch</span>
+        <div id="nextLaunch" class="next-layout"><div><h2 class="mission">No matching launch</h2><p class="muted">Adjust filters or update the launch data array.</p></div></div>
+      </article>
+      <article class="card summary-card">
+        <h2>Schedule Summary</h2>
+        <div class="status-panel"><span class="eyebrow">Visible Entries</span><strong id="visibleCount">0 launches</strong></div>
+        <div class="metrics"><div class="metric"><span class="metric-label">Scheduled / GO</span><strong id="goCount" class="metric-value">0</strong></div><div class="metric"><span class="metric-label">Timing TBD</span><strong id="tbdCount" class="metric-value">0</strong></div><div class="metric"><span class="metric-label">Delayed / Hold</span><strong id="holdCount" class="metric-value">0</strong></div><div class="metric"><span class="metric-label">Last Local Refresh</span><strong id="lastRefresh" class="metric-value">--</strong></div></div>
+      </article>
+      <article class="card table-card"><h2>Upcoming Cape Area Launch Schedule</h2><div class="table-wrap"><table><thead><tr><th>Mission</th><th>Provider / Vehicle</th><th>Site / Pad</th><th>Window (Zulu)</th><th>Window (Eastern)</th><th>Status</th><th>Notes / Source</th></tr></thead><tbody id="launchRows"></tbody></table></div></article>
+      <article class="card source-card"><h2>Data Source and Update Method</h2><p>This page is an original dashboard and is not a copy of the Next Spaceflight website. The initial entries below were transcribed from the Cape Canaveral entries visible on Next Spaceflight’s public launches index on 13 November 2026.</p><p>To update it, edit the <code>LAUNCHES</code> array near the bottom of this file with data you are authorized to publish. Do not depend on browser-side scraping of another website: it can fail because of cross-origin controls and may require the source owner’s permission or an approved API/license.</p><p>All precise launch times should be stored as ISO-8601 UTC values in <code>windowUtc</code>. If an official time is not confirmed, leave <code>windowUtc</code> blank and populate <code>scheduleText</code>; the dashboard will display it as timing TBD rather than infer a Zulu time.</p></article>
+    </section>
+    <footer>Unclassified public-information planning aid. This display does not provide launch approval, range status, weather authorization, or an official mission timeline.</footer>
+  </main>
+
+  <script>
+    /*
+      EDITABLE DATA ARRAY
+      Use one object for each authorized public launch entry.
+      windowUtc should be an ISO-8601 UTC string, e.g. "2026-11-29T20:49:00Z".
+      Leave windowUtc blank when an exact official time is unavailable.
+    */
+    const LAUNCHES = [
+      {
+        mission: "Amazon Leo (LV-01)", provider: "ULA", vehicle: "Vulcan VC6L",
+        site: "Cape Canaveral SFS", pad: "Not stated on source index",
+        windowUtc: "", scheduleText: "Friday, 5:54 PM shown on source index; verify exact time and time zone.",
+        status: "TBD", notes: "Public schedule index; timing requires official confirmation.",
+        source: "Next Spaceflight public launches index", sourceUrl: "https://nextspaceflight.com/launches/"
+      },
+      {
+        mission: "CRS NG-25", provider: "SpaceX", vehicle: "Falcon 9 Block 5",
+        site: "Cape Canaveral SFS", pad: "Not stated on source index",
+        windowUtc: "", scheduleText: "November 29, 3:49 PM shown on source index; verify exact date/time zone and window.",
+        status: "TBD", notes: "Public schedule index; timing requires official confirmation.",
+        source: "Next Spaceflight public launches index", sourceUrl: "https://nextspaceflight.com/launches/"
+      }
+    ];
+
+    const providerFilter = document.getElementById("providerFilter");
+    const siteFilter = document.getElementById("siteFilter");
+    const statusFilter = document.getElementById("statusFilter");
+    const launchRows = document.getElementById("launchRows");
+    const statusText = document.getElementById("status");
+
+    function escapeHtml(value) { const box = document.createElement("div"); box.textContent = value ?? ""; return box.innerHTML; }
+    function updateZuluClock() { document.getElementById("zuluClock").textContent = new Intl.DateTimeFormat("en-GB", { timeZone:"UTC", day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit", second:"2-digit", hourCycle:"h23" }).format(new Date()).toUpperCase() + "Z"; }
+    function formatUtc(value) { if (!value) return "TBD / verify"; return new Intl.DateTimeFormat("en-GB", { timeZone:"UTC", year:"numeric", month:"short", day:"2-digit", hour:"2-digit", minute:"2-digit", hourCycle:"h23" }).format(new Date(value)).toUpperCase() + "Z"; }
+    function formatEastern(value) { if (!value) return "TBD / verify"; return new Intl.DateTimeFormat("en-US", { timeZone:"America/New_York", year:"numeric", month:"short", day:"numeric", hour:"numeric", minute:"2-digit", timeZoneName:"short" }).format(new Date(value)); }
+    function statusClass(status) { return status === "GO" ? "green" : status === "TBD" ? "yellow" : status === "DELAYED" || status === "HOLD" ? "red" : "gray"; }
+    function validTime(item) { return item.windowUtc && !Number.isNaN(new Date(item.windowUtc).getTime()); }
+    function sortLaunches(items) { return [...items].sort((a,b) => { if (validTime(a) && validTime(b)) return new Date(a.windowUtc) - new Date(b.windowUtc); if (validTime(a)) return -1; if (validTime(b)) return 1; return a.mission.localeCompare(b.mission); }); }
+    function durationToWindow(value) { if (!validTime({ windowUtc:value })) return "TIME TBD"; const ms = new Date(value).getTime() - Date.now(); if (ms <= 0) return "WINDOW TIME PASSED / VERIFY"; const totalMinutes = Math.floor(ms / 60000); const days = Math.floor(totalMinutes / 1440); const hours = Math.floor((totalMinutes % 1440) / 60); const minutes = totalMinutes % 60; return `${days}d ${String(hours).padStart(2,"0")}h ${String(minutes).padStart(2,"0")}m`; }
+    function populateFilters() { [...new Set(LAUNCHES.map(x => x.provider))].sort().forEach(v => providerFilter.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`)); [...new Set(LAUNCHES.map(x => x.site))].sort().forEach(v => siteFilter.insertAdjacentHTML("beforeend", `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`)); }
+    function filteredLaunches() { return sortLaunches(LAUNCHES.filter(item => (providerFilter.value === "all" || item.provider === providerFilter.value) && (siteFilter.value === "all" || item.site === siteFilter.value) && (statusFilter.value === "all" || item.status === statusFilter.value))); }
+    function render() {
+      const items = filteredLaunches();
+      const next = items.find(item => !validTime(item) || new Date(item.windowUtc) >= new Date()) || items[0];
+      document.getElementById("visibleCount").textContent = `${items.length} launch${items.length === 1 ? "" : "es"}`;
+      document.getElementById("goCount").textContent = items.filter(x => x.status === "GO").length;
+      document.getElementById("tbdCount").textContent = items.filter(x => x.status === "TBD").length;
+      document.getElementById("holdCount").textContent = items.filter(x => x.status === "DELAYED" || x.status === "HOLD").length;
+      document.getElementById("lastRefresh").textContent = new Intl.DateTimeFormat("en-US", { hour:"numeric", minute:"2-digit", timeZoneName:"short" }).format(new Date());
+      document.getElementById("nextLaunch").innerHTML = next ? `<div><span class="badge ${statusClass(next.status)}">${escapeHtml(next.status)}</span><h2 class="mission">${escapeHtml(next.mission)}</h2><p class="vehicle">${escapeHtml(next.provider)} · ${escapeHtml(next.vehicle)}</p><p class="muted">${escapeHtml(next.site)} · ${escapeHtml(next.pad)}</p><p class="muted">${escapeHtml(next.scheduleText || formatUtc(next.windowUtc))}</p></div><div class="countdown"><span class="eyebrow">${validTime(next) ? "Time to Window" : "Launch Timing"}</span><strong>${durationToWindow(next.windowUtc)}</strong></div>` : `<div><h2 class="mission">No matching launch</h2><p class="muted">Adjust filters or update the launch data array.</p></div>`;
+      launchRows.innerHTML = items.length ? items.map(item => `<tr><td><strong>${escapeHtml(item.mission)}</strong></td><td>${escapeHtml(item.provider)}<br><span class="muted">${escapeHtml(item.vehicle)}</span></td><td>${escapeHtml(item.site)}<br><span class="muted">${escapeHtml(item.pad)}</span></td><td>${escapeHtml(formatUtc(item.windowUtc))}</td><td>${escapeHtml(formatEastern(item.windowUtc))}</td><td><span class="badge ${statusClass(item.status)}">${escapeHtml(item.status)}</span></td><td>${escapeHtml(item.notes)}<br><a href="${escapeHtml(item.sourceUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(item.source)}</a></td></tr>`).join("") : `<tr><td colspan="7" class="muted">No launch entries match the current filters.</td></tr>`;
+      statusText.textContent = `Showing ${items.length} Cape area launch entr${items.length === 1 ? "y" : "ies"}.`;
+    }
+    document.getElementById("refreshButton").addEventListener("click", render);
+    [providerFilter, siteFilter, statusFilter].forEach(control => control.addEventListener("change", render));
+    populateFilters(); updateZuluClock(); setInterval(updateZuluClock, 1000); setInterval(render, 60000); render();
+  </script>
+</body>
+</html>
